@@ -1,0 +1,4 @@
+.env
+
+# Unencrypted originals - never pushed (repo is public)
+public-encrypted/
