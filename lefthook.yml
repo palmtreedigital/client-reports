@@ -5,4 +5,4 @@ pre-commit:
   parallel: true
   commands:
     encrypt-public:
-      run: python3 scripts/encrypt/encrypt_public.py --skip-unchanged && (git add $(find public -name '*.html') 2>/dev/null || true)
+      run: OP_REF_FILE="$HOME/.claude/secrets-client-reports.op"; [ -f "$HOME/.claude/bin/load-secrets.sh" ] && . "$HOME/.claude/bin/load-secrets.sh"; python3 scripts/encrypt/encrypt_public.py --skip-unchanged && (git add $(find public -name '*.html') 2>/dev/null || true)
