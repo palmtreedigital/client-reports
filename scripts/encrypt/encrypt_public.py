@@ -4,7 +4,8 @@ Encrypt all HTML files in public-encrypted/ using StatiCrypt,
 output the protected files to public/ (the GitHub Pages release folder).
 
 Password strategy: derived passwords
-  Each file's password = HMAC-SHA256(master_secret, relative_path), base64-encoded.
+  Each file's password = HMAC-SHA256(master_secret, relative_path), read as a passphrase
+  (3 words from wordlist.txt + 2 digits, e.g. maple-river-swan-42).
  - One master secret to rule them all (store in your password manager)
  - Each file gets a unique password - sharing one doesn't expose others
  - Deterministic: you can always regenerate any password from secret + filename
@@ -26,7 +27,6 @@ Requirements:
 """
 
 import argparse
-import base64
 import hashlib
 import hmac
 import os
@@ -48,13 +48,30 @@ if _env_file.exists():
 SOURCE_DIR = WORKSPACE / "public-encrypted"
 OUTPUT_DIR = WORKSPACE / "public"
 TEMPLATE   = Path(__file__).parent / "template.html"
+WORDLIST   = Path(__file__).parent / "wordlist.txt"  # EFF short wordlist 1, yo-yo swapped for yacht
+
+
+def password_key(relative_path: str) -> str:
+    """The path a password is derived from. A client's mid-month page shares its dashboard's password, so the
+    client keeps one login: <slug>/mid-month/index.html -> <slug>/index.html."""
+    parts = relative_path.split("/")
+    if len(parts) == 3 and parts[1] == "mid-month" and parts[2] == "index.html":
+        return f"{parts[0]}/index.html"
+    return relative_path
 
 
 def derive_password(master_secret: str, relative_path: str) -> str:
+    """Passphrase like 'maple-river-swan-42': 3 words from WORDLIST + 2 digits (~37 bits), all lowercase, nothing
+    that looks alike or breaks when copied from an email. The old 24-char base64 strings clients couldn't paste."""
     key = master_secret.encode("utf-8")
     msg = relative_path.encode("utf-8")
-    digest = hmac.new(key, msg, hashlib.sha256).digest()
-    return base64.urlsafe_b64encode(digest)[:24].decode("ascii")
+    n = int.from_bytes(hmac.new(key, msg, hashlib.sha256).digest(), "big")
+    words = WORDLIST.read_text(encoding="utf-8").split()
+    picked = []
+    for _ in range(3):
+        n, i = divmod(n, len(words))
+        picked.append(words[i])
+    return "-".join(picked) + f"-{n % 100:02d}"
 
 
 def encrypt_file(src: Path, output_dir: Path, password: str) -> bool:
@@ -129,7 +146,7 @@ def main():
     if override_password:
         passwords = {rel_paths[f]: override_password for f in html_files}
     else:
-        passwords = {rel_paths[f]: derive_password(master_secret, rel_paths[f]) for f in html_files}
+        passwords = {rel_paths[f]: derive_password(master_secret, password_key(rel_paths[f])) for f in html_files}
 
     if args.show:
         if override_password:

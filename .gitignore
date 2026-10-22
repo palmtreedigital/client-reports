@@ -2,3 +2,7 @@
 
 # Unencrypted originals - never pushed (repo is public)
 public-encrypted/
+
+# Personal Claude Code settings - never pushed
+.claude/settings.local.json
+.DS_Store
