@@ -18,3 +18,8 @@ publish:
 # make prune MONTH=2026-10 APPLY=1    replaces them with a redirect to the live dashboard (Chris's OK first)
 prune:
 	@python3 scripts/prune_archives.py $(MONTH) $(if $(APPLY),--apply)
+
+# make prune-weekly SLUG=topanga-shbdnj KEEP=13            lists weekly archive pages beyond the newest 13 (dry run)
+# make prune-weekly SLUG=topanga-shbdnj KEEP=13 APPLY=1    replaces them with a redirect to the live page
+prune-weekly:
+	@python3 scripts/prune_weekly.py "$(SLUG)" --keep $(or $(KEEP),13) $(if $(APPLY),--apply)
