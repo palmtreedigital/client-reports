@@ -34,3 +34,11 @@ def test_apply_replaces_with_stub_and_dry_run_does_not(tmp_path):
         assert 'http-equiv="refresh"' in t and "SECRET" not in t and 'url=../"' in t
     assert (pub / "s" / "assets" / "index.html").read_text() == "SECRET"
     assert prune_weekly.run("s", 13, True, pub) == []  # stubs are not re-pruned
+
+
+def test_keep_below_one_exits_2(monkeypatch, capsys):
+    import pytest
+    monkeypatch.setattr(sys, "argv", ["prune_weekly.py", "s", "--keep", "0", "--apply"])
+    with pytest.raises(SystemExit) as e:
+        prune_weekly.main()
+    assert e.value.code == 2

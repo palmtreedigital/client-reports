@@ -55,6 +55,9 @@ def main():
     ap.add_argument("--keep", type=int, default=13)
     ap.add_argument("--apply", action="store_true")
     a = ap.parse_args()
+    if a.keep < 1:
+        print("--keep must be at least 1")
+        raise SystemExit(2)
     old = run(a.slug, a.keep, a.apply)
     if not old:
         print(f"Nothing to prune: {a.slug} has no more than {a.keep} weekly archive pages.")
