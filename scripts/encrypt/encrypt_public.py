@@ -53,11 +53,11 @@ WORDLIST   = Path(__file__).parent / "wordlist.txt"  # EFF short wordlist 1, yo-
 
 
 def password_key(relative_path: str) -> str:
-    """The path a password is derived from. A client's mid-month and monthly archive pages share its dashboard's
-    password, so the client keeps one login: <slug>/mid-month/index.html and <slug>/2026-10/index.html ->
-    <slug>/index.html."""
+    """The path a password is derived from. A client's mid-month, monthly archive and weekly archive pages share its
+    dashboard's password, so the client keeps one login: <slug>/mid-month/index.html, <slug>/2026-10/index.html and
+    <slug>/2026-11-09/index.html -> <slug>/index.html."""
     parts = relative_path.split("/")
-    if len(parts) == 3 and parts[2] == "index.html" and (parts[1] == "mid-month" or re.fullmatch(r"\d{4}-\d{2}", parts[1])):
+    if len(parts) == 3 and parts[2] == "index.html" and (parts[1] == "mid-month" or re.fullmatch(r"\d{4}-\d{2}(?:-\d{2})?", parts[1])):
         return f"{parts[0]}/index.html"
     return relative_path
 
