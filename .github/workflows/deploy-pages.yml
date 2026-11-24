@@ -19,12 +19,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
+      - uses: actions/checkout@v5
+      - uses: actions/configure-pages@v6
       # Only public/ is uploaded. public-encrypted/ and everything else is never deployed.
-      - uses: actions/upload-pages-artifact@v3
+      # include-hidden-files keeps public/.nojekyll, as v3 did (v4+ drops dotfiles by default).
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: public
+          include-hidden-files: true
 
   # Separate job so deploy-pages looks up the artifact after a job boundary
   # (same-job lookup races the artifacts API: actions/deploy-pages#451).
@@ -36,4 +38,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
